@@ -48,7 +48,7 @@ class GeneratedParser(Parser):
 
     @memoize
     def selectable(self) -> Optional[Any]:
-        # selectable: NAME | NUMBER
+        # selectable: NAME | NUMBER | '*'
         mark = self._mark()
         if (
             (name := self.name())
@@ -59,6 +59,11 @@ class GeneratedParser(Parser):
             (number := self.number())
         ):
             return {'const' : float ( number . string )}
+        self._reset(mark)
+        if (
+            (literal := self.expect('*'))
+        ):
+            return {'column' : '*'}
         self._reset(mark)
         return None
 

@@ -1,5 +1,7 @@
 start: select
 select: 'SELECT' selectables { selectables }
 selectables: ','.selectable+
-selectable: NAME { {'column': name.string} }
+selectable:
+  | NAME { {'column': name.string} }
   | NUMBER { {'const': float(number.string)} }
+  | '*' { {'column': '*'} }
