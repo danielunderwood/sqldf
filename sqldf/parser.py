@@ -13,12 +13,14 @@ class GeneratedParser(Parser):
 
     @memoize
     def start(self) -> Optional[Any]:
-        # start: select
+        # start: select where?
         mark = self._mark()
         if (
             (select := self.select())
+            and
+            (opt := self.where(),)
         ):
-            return select
+            return [select, opt]
         self._reset(mark)
         return None
 
@@ -36,13 +38,81 @@ class GeneratedParser(Parser):
         return None
 
     @memoize
+    def where(self) -> Optional[Any]:
+        # where: 'WHERE' NAME where_op
+        mark = self._mark()
+        if (
+            (literal := self.expect('WHERE'))
+            and
+            (name := self.name())
+            and
+            (where_op := self.where_op())
+        ):
+            return {"filter" : {"column" : name . string , ** where_op}}
+        self._reset(mark)
+        return None
+
+    @memoize
+    def where_op(self) -> Optional[Any]:
+        # where_op: OP value | 'NOT' 'IN' '(' ','.value+ ')' | 'IN' '(' ','.value+ ')'
+        mark = self._mark()
+        if (
+            (op := self.op())
+            and
+            (value := self.value())
+        ):
+            return {"op" : op . string , "value" : value}
+        self._reset(mark)
+        if (
+            (literal := self.expect('NOT'))
+            and
+            (literal_1 := self.expect('IN'))
+            and
+            (literal_2 := self.expect('('))
+            and
+            (value := self._gather_1())
+            and
+            (literal_3 := self.expect(')'))
+        ):
+            return {"op" : "NOT IN" , "value" : value}
+        self._reset(mark)
+        if (
+            (literal := self.expect('IN'))
+            and
+            (literal_1 := self.expect('('))
+            and
+            (value := self._gather_3())
+            and
+            (literal_2 := self.expect(')'))
+        ):
+            return {"op" : "IN" , "value" : value}
+        self._reset(mark)
+        return None
+
+    @memoize
+    def value(self) -> Optional[Any]:
+        # value: STRING | NUMBER
+        mark = self._mark()
+        if (
+            (string := self.string())
+        ):
+            return string . string . strip ( "'\"" )
+        self._reset(mark)
+        if (
+            (number := self.number())
+        ):
+            return float ( number . string )
+        self._reset(mark)
+        return None
+
+    @memoize
     def selectables(self) -> Optional[Any]:
         # selectables: ','.selectable+
         mark = self._mark()
         if (
-            (_gather_1 := self._gather_1())
+            (_gather_5 := self._gather_5())
         ):
-            return _gather_1
+            return _gather_5
         self._reset(mark)
         return None
 
@@ -69,7 +139,67 @@ class GeneratedParser(Parser):
 
     @memoize
     def _loop0_2(self) -> Optional[Any]:
-        # _loop0_2: ',' selectable
+        # _loop0_2: ',' value
+        mark = self._mark()
+        children = []
+        while (
+            (literal := self.expect(','))
+            and
+            (elem := self.value())
+        ):
+            children.append(elem)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _gather_1(self) -> Optional[Any]:
+        # _gather_1: value _loop0_2
+        mark = self._mark()
+        if (
+            (elem := self.value())
+            is not None
+            and
+            (seq := self._loop0_2())
+            is not None
+        ):
+            return [elem] + seq
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _loop0_4(self) -> Optional[Any]:
+        # _loop0_4: ',' value
+        mark = self._mark()
+        children = []
+        while (
+            (literal := self.expect(','))
+            and
+            (elem := self.value())
+        ):
+            children.append(elem)
+            mark = self._mark()
+        self._reset(mark)
+        return children
+
+    @memoize
+    def _gather_3(self) -> Optional[Any]:
+        # _gather_3: value _loop0_4
+        mark = self._mark()
+        if (
+            (elem := self.value())
+            is not None
+            and
+            (seq := self._loop0_4())
+            is not None
+        ):
+            return [elem] + seq
+        self._reset(mark)
+        return None
+
+    @memoize
+    def _loop0_6(self) -> Optional[Any]:
+        # _loop0_6: ',' selectable
         mark = self._mark()
         children = []
         while (
@@ -83,21 +213,21 @@ class GeneratedParser(Parser):
         return children
 
     @memoize
-    def _gather_1(self) -> Optional[Any]:
-        # _gather_1: selectable _loop0_2
+    def _gather_5(self) -> Optional[Any]:
+        # _gather_5: selectable _loop0_6
         mark = self._mark()
         if (
             (elem := self.selectable())
             is not None
             and
-            (seq := self._loop0_2())
+            (seq := self._loop0_6())
             is not None
         ):
             return [elem] + seq
         self._reset(mark)
         return None
 
-    KEYWORDS = ('SELECT',)
+    KEYWORDS = ('IN', 'NOT', 'SELECT', 'WHERE')
     SOFT_KEYWORDS = ()
 
 

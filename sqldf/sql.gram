@@ -1,5 +1,14 @@
-start: select
+start: select where?
 select: 'SELECT' selectables { selectables }
+where: 'WHERE' NAME where_op { {"filter": {"column": name.string, **where_op } }}
+# TODO Probably more efficient to have where ops produce functions (df, column, value) -> bool
+where_op:
+  | OP value { {"op": op.string, "value": value} }
+  | 'NOT' 'IN' '(' value=','.value+ ')' { {"op": "NOT IN", "value": value} }
+  | 'IN' '(' value=','.value+ ')' { {"op": "IN", "value": value} }
+value:
+  | STRING { string.string.strip("'\"") }
+  | NUMBER { float(number.string) }
 selectables: ','.selectable+
 selectable:
   | NAME { {'column': name.string} }
