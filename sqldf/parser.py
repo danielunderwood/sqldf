@@ -26,10 +26,10 @@ class GeneratedParser(Parser):
 
     @memoize
     def select(self) -> Optional[Any]:
-        # select: 'SELECT' selectables
+        # select: select_kw selectables
         mark = self._mark()
         if (
-            (literal := self.expect('SELECT'))
+            (select_kw := self.select_kw())
             and
             (selectables := self.selectables())
         ):
@@ -38,17 +38,49 @@ class GeneratedParser(Parser):
         return None
 
     @memoize
-    def where(self) -> Optional[Any]:
-        # where: 'WHERE' NAME where_op
+    def select_kw(self) -> Optional[Any]:
+        # select_kw: 'SELECT' | 'select'
         mark = self._mark()
         if (
-            (literal := self.expect('WHERE'))
+            (literal := self.expect('SELECT'))
+        ):
+            return literal
+        self._reset(mark)
+        if (
+            (literal := self.expect('select'))
+        ):
+            return literal
+        self._reset(mark)
+        return None
+
+    @memoize
+    def where(self) -> Optional[Any]:
+        # where: where_kw NAME where_op
+        mark = self._mark()
+        if (
+            (where_kw := self.where_kw())
             and
             (name := self.name())
             and
             (where_op := self.where_op())
         ):
             return {"filter" : {"column" : name . string , ** where_op}}
+        self._reset(mark)
+        return None
+
+    @memoize
+    def where_kw(self) -> Optional[Any]:
+        # where_kw: 'WHERE' | 'where'
+        mark = self._mark()
+        if (
+            (literal := self.expect('WHERE'))
+        ):
+            return literal
+        self._reset(mark)
+        if (
+            (literal := self.expect('where'))
+        ):
+            return literal
         self._reset(mark)
         return None
 
@@ -227,7 +259,7 @@ class GeneratedParser(Parser):
         self._reset(mark)
         return None
 
-    KEYWORDS = ('IN', 'NOT', 'SELECT', 'WHERE')
+    KEYWORDS = ('where', 'SELECT', 'WHERE', 'IN', 'select', 'NOT')
     SOFT_KEYWORDS = ()
 
 
