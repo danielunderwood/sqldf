@@ -28,6 +28,7 @@ Well now you can with sqldf!
 - `GROUP BY`
 - `JOIN`
 - `WHERE ... LIKE`
+- `ORDER BY`
 
 ## How it Works
 
