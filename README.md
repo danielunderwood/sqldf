@@ -6,9 +6,8 @@ Ever wish you could query pandas DataFrames with SQL like this?
 
 ```python
 df = pd.DataFrame(...)
-sqldf.query("""
+sqldf.query_df(df, """
 SELECT *, sum(b)
-FROM df
 WHERE a > 5
 GROUP BY b
 """)

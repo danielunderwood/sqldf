@@ -46,7 +46,7 @@ def parse(sql):
     return p.start()
 
 
-def apply_sql(df, sql):
+def query_df(df, sql):
     parsed = parse(sql)
     # TODO Proper logging
     print(parsed)
@@ -84,5 +84,4 @@ if __name__ == "__main__":
     iris = pd.read_csv(
         "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
     )
-    reduced = apply_sql(iris, sys.argv[1])
-    print(reduced)
+    reduced = query_df(iris, " ".join(sys.argv[1:]))
