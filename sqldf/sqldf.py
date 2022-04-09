@@ -52,7 +52,7 @@ def apply_sql(df, sql):
     print(parsed)
     columns = [c["column"] for c in parsed[0] if c and "column" in c]
     constants = [c["const"] for c in parsed[0] if c and "const" in c]
-    filters = [c["filter"] for c in parsed if c and  "filter" in c]
+    filters = [c["filter"] for c in parsed if c and "filter" in c]
     # If a SELECT * is passed, we just use the original df
     # Note that this may not work exactly if we add alias support and have something like
     # SELECT *, a AS alias, but I don't know if I've ever seen that done in regular SQL
